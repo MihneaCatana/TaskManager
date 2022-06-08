@@ -1,0 +1,46 @@
+.Update{
+    background-color: green !important;
+    border: none !important;
+    margin-right: 1em !important;
+    color: white !important;
+}
+
+.Update:hover{
+    background-color: green !important;
+}
+
+.Delete{
+    background-color: red !important;
+    border: none !important;
+    margin-right: 1em !important;
+    color: white !important;
+}
+
+.Delete:hover{
+    background-color: red !important;
+}
+
+.Activate{
+    background-color: blue !important;
+    border: none !important;
+    color: white !important;
+}
+
+.Activate:hover{
+    background-color: blue !important;
+}
+
+.buttons{
+    display: flex;
+    justify-content:center;
+    
+   
+}
+
+.buttons:first-child{
+    margin-right: 1em !important;
+}
+
+.p-confirm-dialog-reject{
+    background-color: transparent !important;
+}

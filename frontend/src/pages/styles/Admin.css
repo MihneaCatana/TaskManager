@@ -1,0 +1,17 @@
+.title{
+    text-align: center;
+}
+
+.cards{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1em;
+    flex-wrap: wrap;
+}
+
+.Card-Class:hover{
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    transform:scale(120%);
+}

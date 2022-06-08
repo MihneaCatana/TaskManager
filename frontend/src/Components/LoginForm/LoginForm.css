@@ -1,0 +1,57 @@
+.card{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+}
+
+input{
+    width: 10rem;
+}
+
+.p-float-label{
+    
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.p-button
+{
+    background-color: #fe8c00 !important;
+    margin-top: 1.25rem !important;
+}
+
+/* .toast-demo button {
+    min-width: 10rem;
+    margin-right: .5rem;
+}
+
+.p-toast
+{
+    width:20rem !important;
+} */
+
+.form-demo{
+    min-width:30%;
+    min-height:60%;
+    border-radius:30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: #fff;
+}
+
+@media screen and (max-width: 1400px) {
+    .form-demo {
+        min-width:60%;
+    }
+}
+
+@media screen and (max-width: 960px){ 
+    .form-demo {
+        min-width:80%;
+    }
+}

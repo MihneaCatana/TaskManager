@@ -1,0 +1,25 @@
+.page404{
+    display: flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.page404 h1{
+    text-align:center;
+}
+
+.imagine{
+    width: 50%;
+}
+
+@media (max-width: 768px)
+{
+  .page404{
+      flex-direction: column;
+      height: 100vh;
+  }
+
+  .imagine{
+      width: 70%;
+  }
+}

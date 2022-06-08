@@ -1,0 +1,220 @@
+ALTER SESSION
+SET NLS_DATE_FORMAT = 'DD-MM-YYYY HH24:MI:SS';
+
+DROP TABLE angajati CASCADE CONSTRAINTS;
+DROP TABLE taskuri CASCADE CONSTRAINTS;
+DROP TABLE grup_taskuri CASCADE CONSTRAINTS;
+DROP TABLE comentarii CASCADE CONSTRAINTS;
+DROP TABLE departament CASCADE CONSTRAINTS;
+DROP TABLE status_user CASCADE CONSTRAINTS;
+DROP TABLE status_task CASCADE CONSTRAINTS;
+DROP SEQUENCE angajati_seq;
+DROP SEQUENCE departament_seq;
+DROP SEQUENCE taskuri_seq;
+DROP SEQUENCE grup_taskuri_seq;
+DROP SEQUENCE comentariu_seq;
+--DROP TRIGGER angajati_status_trigger;
+--DROP TRIGGER angajati_activat_trigger;
+--DROP TRIGGER taskuri_finalizare_trigger;
+--DROP TRIGGER taskuri_reactivare_trigger
+
+CREATE TABLE angajati(
+    id_angajat NUMBER(8)  , --auto-increment 
+    prenume VARCHAR(255) NOT NULL,
+    nume VARCHAR(255) NOT NULL,
+    parola VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    id_departament NUMBER(8) ,
+    id_status_user NUMBER(2) , -- o sa fie 3 statusuri (0 o sa fie automat pentru fiecare cont, administratorul trebuie dupa sa modifice el statusul)
+    activat NUMBER(1) -- boolean - e activat sau dezactivat 
+    
+);
+
+ALTER TABLE
+    angajati ADD CONSTRAINT  id_angajat_primary PRIMARY KEY (id_angajat) ;
+    
+ALTER TABLE
+    angajati ADD CONSTRAINT angajati_email_unique UNIQUE (email); -- un singur cont pe email
+    
+ALTER TABLE 
+    angajati ADD CONSTRAINT activat_check CHECK (activat = 1 OR activat = 0);
+    
+CREATE TABLE departament( 
+    id_departament NUMBER(8) ,--auto-increment 
+    nume_departament VARCHAR(255) NOT NULL,
+    id_sef_departament NUMBER(8) -- un departament poate sa nu aiba un sef de departament temporar 
+);
+
+ALTER TABLE
+    departament ADD CONSTRAINT id_departament_primary PRIMARY KEY (id_departament);
+    
+CREATE TABLE taskuri(
+    id_task NUMBER(8), --auto-increment ,
+    deadline DATE NOT NULL, -- data pana la care se poate face taskul
+    descriere_task VARCHAR(255),
+    status_task NUMBER(1) NOT NULL, -- boolean - e facut sau nu e facut 
+    data_finalizare DATE, -- data la care angajatul a terminat taskul, adica cand se schimba descriere task din false in true 
+    data_inceput_task DATE -- data la care a fost atribuit taskul (o sa fie data sistemului)
+);
+
+ALTER TABLE 
+    taskuri ADD CONSTRAINT status_task_check CHECK (status_task = 2 OR status_task = 1);
+
+ALTER TABLE
+    taskuri ADD CONSTRAINT id_task_primary PRIMARY KEY(id_task);
+    
+CREATE TABLE grup_taskuri( -- tabela de legaturi pentru a evita one to many 
+    id_grup NUMBER(8) , --auto-increment 
+    id_task NUMBER(8) ,
+    id_angajat NUMBER(8) ,
+    denumire_grup VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE
+    grup_taskuri ADD CONSTRAINT id_grup_primary UNIQUE (id_grup);
+        
+ALTER TABLE
+    grup_taskuri ADD CONSTRAINT id_grup_primary_angajat PRIMARY KEY (id_angajat, id_task);
+    
+    
+CREATE TABLE comentarii(
+    id_angajat NUMBER(8) NOT NULL,
+    id_comentariu NUMBER(8) , --auto-increment 
+    text_comentariu VARCHAR(255) NOT NULL,
+    id_task NUMBER(8) NOT NULL
+);
+
+ALTER TABLE
+    comentarii ADD CONSTRAINT id_comentariu_primary PRIMARY KEY(id_comentariu);
+    
+CREATE TABLE status_user(
+    id_status_user NUMBER(1) , -- ce fel de user avem 0 - angajat, 1 - sef de departament, 2 - superuser
+    denumire_status VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE
+    status_user ADD CONSTRAINT id_status_user_primary PRIMARY KEY(id_status_user);
+    
+CREATE TABLE status_task(
+    id_status_task NUMBER(1), -- in ce situatie se afla taskul : finalizat(1), in progres(0)
+    denumire_status VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE
+    status_task ADD CONSTRAINT id_status_task_primary PRIMARY KEY(id_status_task);
+    
+ALTER TABLE
+    grup_taskuri ADD CONSTRAINT id_angajat_foreign FOREIGN KEY(id_angajat) REFERENCES angajati(id_angajat) ON DELETE CASCADE;
+    
+ALTER TABLE
+    angajati ADD CONSTRAINT departament_foreign FOREIGN KEY(id_departament) REFERENCES departament(id_departament);
+    
+ALTER TABLE
+    angajati ADD CONSTRAINT id_status_user_foreign FOREIGN KEY(id_status_user) REFERENCES status_user(id_status_user);
+    
+ALTER TABLE
+    departament ADD CONSTRAINT sef_departament_foreign FOREIGN KEY(id_sef_departament) REFERENCES angajati(id_angajat);
+    
+ALTER TABLE
+    grup_taskuri ADD CONSTRAINT task_foreign FOREIGN KEY(id_task) REFERENCES taskuri(id_task);
+    
+ALTER TABLE
+    taskuri ADD CONSTRAINT task_foreign_status FOREIGN KEY(status_task) REFERENCES status_task(id_status_task);
+    
+ALTER TABLE
+    comentarii ADD CONSTRAINT task_foreign_taskuri FOREIGN KEY(id_task) REFERENCES taskuri(id_task);
+    
+ALTER TABLE
+    comentarii ADD CONSTRAINT comentarii_angaj FOREIGN KEY (id_angajat) REFERENCES angajati(id_angajat) ON DELETE CASCADE;
+    
+-- secvente 
+
+CREATE SEQUENCE angajati_seq -- ANGAJATI
+START WITH 1
+INCREMENT BY 1
+NOCYCLE;
+
+CREATE SEQUENCE departament_seq --DEPARTAMENT
+START WITH 1
+INCREMENT BY 1
+NOCYCLE;
+
+CREATE SEQUENCE taskuri_seq --TASKURI
+START WITH 1
+INCREMENT BY 1
+NOCYCLE;
+
+CREATE SEQUENCE grup_taskuri_seq -- GRUP TASKURI
+START WITH 1
+INCREMENT BY 1
+NOCYCLE;
+
+CREATE SEQUENCE comentariu_seq -- COMENTARII
+START WITH 1
+INCREMENT BY 1
+NOCYCLE;
+
+-- triggeri
+ 
+--SELECT TO_CHAR( SYSDATE, 'HH24.MI' ) time_posted FROM DUAL;  --query pentru minute si ora 
+
+--trigger pentru activat 
+CREATE TRIGGER angajati_activat_trigger
+BEFORE INSERT ON angajati
+FOR EACH ROW WHEN(NEW.activat is NULL)
+BEGIN 
+  :NEW.activat := 0;
+END;
+/
+
+--trigger pentru finalizarea taskului
+CREATE TRIGGER taskuri_finalizare_trigger
+BEFORE UPDATE ON taskuri
+FOR EACH ROW WHEN(NEW.status_task = 2)
+BEGIN 
+  :NEW.data_finalizare := SYSDATE;
+END;
+/
+
+--trigger pentru reactivarea taskului
+CREATE TRIGGER taskuri_reactivare_trigger
+BEFORE UPDATE ON taskuri
+FOR EACH ROW WHEN(NEW.status_task = 1)
+BEGIN 
+  :NEW.data_finalizare := NULL;
+END;
+/
+
+INSERT INTO status_user VALUES (0,'Angajat');
+INSERT INTO status_user VALUES (1,'Sef de departament');
+INSERT INTO status_user VALUES (2,'Administrator');
+
+INSERT INTO angajati(id_angajat,prenume,nume,parola,email,id_status_user,activat) VALUES(angajati_seq.nextval,'Mihnea','Catana','test123','mihneacatana@gmail.com',2,1);
+INSERT INTO angajati(id_angajat,prenume,nume,parola,email,id_status_user,activat) VALUES(angajati_seq.nextval,'Mihnea','Catana-Adam','testTest','catanaadammihnea20@stud.ase.ro',0,1);
+INSERT INTO angajati(id_angajat,prenume,nume,parola,email,id_status_user,activat) VALUES(angajati_seq.nextval,'Ionut','Popescu','testam','ionutpopescu20@gmail.com',1,1);
+
+
+INSERT INTO status_task VALUES (1,'In progres');
+INSERT INTO status_task VALUES (2,'Finalizat');
+
+INSERT INTO departament(id_departament,nume_departament) VALUES (departament_seq.nextval,'IT');
+INSERT INTO departament(id_departament,nume_departament) VALUES (departament_seq.nextval,'Securitate');
+INSERT INTO departament(id_departament,nume_departament) VALUES (departament_seq.nextval,'Marketing');
+
+INSERT INTO taskuri VALUES (taskuri_seq.nextval,'22-06-2022','Responsiveness',1,NULL,'12-03-2022');
+INSERT INTO taskuri VALUES (taskuri_seq.nextval,'22-06-2022','Promote new Product',1,NULL,'20-03-2022');
+INSERT INTO taskuri VALUES (taskuri_seq.nextval,'22-06-2022','Improve Security',1,NULL,'30-03-2022');
+
+INSERT INTO grup_taskuri VALUES (grup_taskuri_seq.nextval,1,2,'For Mihnea');
+INSERT INTO grup_taskuri VALUES (grup_taskuri_seq.nextval,2,2,'For Mihnea');
+
+INSERT INTO comentarii VALUES (2,comentariu_seq.nextval,'Trebuie sa scoatem cartonasele deoarece cei de pe mobile nu au parte de un UX prea bun',1);
+INSERT INTO comentarii VALUES (2,comentariu_seq.nextval,'Promovare pe Instagram',2);
+
+COMMIT;
+
+
+
+
+
+

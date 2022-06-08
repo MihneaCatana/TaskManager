@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@300&family=Poppins:wght@300&display=swap');
+
+*{
+  font-family: 'Montserrat Alternates', sans-serif;
+}
+
+.App {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.Navbar {
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1em;
+  background: linear-gradient(to top right, #fe8c00 40%, #181818);
+}
+

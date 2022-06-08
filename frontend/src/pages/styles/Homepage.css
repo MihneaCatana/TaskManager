@@ -1,0 +1,28 @@
+.Svg{
+    display: flex;
+    justify-content:space-around;
+    align-items:center;
+}
+
+.image{
+    width:40%;
+}
+
+.Svg cite{
+    width:40%;
+    font-size:1.6em;
+}
+
+@media (max-width: 800px)
+{
+    .Svg{
+        flex-direction: column;
+    }
+
+    .Svg cite{
+        width:40%;
+        font-size:1.2em;
+        margin-bottom:1em;
+    }
+
+}

@@ -1,0 +1,26 @@
+.formAddUser{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: rgb(40, 40, 40);
+}
+
+.cardAdd{
+    width:initial;
+    padding: 2em 6em;
+    border-radius:20px;
+    background-color: rgb(255, 255, 255);
+}
+
+.cardAdd  .field{
+    margin-top:2em;
+}
+
+.p-button.p-button-icon-only.p-button-rounded{
+    background:red !important;
+}
+
+.p-button-label .p-c{
+    color:white !important;
+}
